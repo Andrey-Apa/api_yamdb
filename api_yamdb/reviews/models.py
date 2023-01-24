@@ -1,47 +1,111 @@
+from datetime import datetime
+
 from django.db import models
+from django.core.validators import MaxValueValidator
+from django.conf import settings
+
+
+CLS_NAME_LEN: int = settings.CLS_NAME_LEN
+CURRENT_YEAR: int = int(datetime.now().strftime('%Y'))
 
 
 class Category(models.Model):
-    name = models.CharField('Название', max_length=256)
-    slug = models.SlugField('slug-адрес', unique=True)
+    """Модель категорий."""
+    name = models.CharField(
+        verbose_name='Название категории',
+        max_length=256,
+    )
+    slug = models.SlugField(
+        verbose_name='slug-адрес категории',
+        unique=True,
+    )
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
-
-class Title(models.Model):
-    name = models.CharField('Название', max_length=256)
-    year = models.IntegerField('Год выпуска')
-    description = models.TextField('Описание', blank=True, null=True)
-    category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL,
-        blank=True, null=True,
-        related_name='titles', verbose_name='Категория')
-
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return self.name[:CLS_NAME_LEN]
 
 
 class Genre(models.Model):
-    name = models.CharField('Название', max_length=256)
-    slug = models.SlugField('slug-адрес', unique=True)
+    """Модель жанров."""
+    name = models.CharField(
+        verbose_name='Название жанра',
+        max_length=256,
+    )
+    slug = models.SlugField(
+        verbose_name='slug-адрес жанра',
+        unique=True,
+    )
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self) -> str:
+        return self.name[:CLS_NAME_LEN]
+
+
+class Title(models.Model):
+    """Модель произведений."""
+    name = models.CharField(
+        verbose_name='Название',
+        max_length=256,
+    )
+    year = models.IntegerField(
+        verbose_name='Год выпуска',
+        validators=(
+            MaxValueValidator(
+                CURRENT_YEAR,
+                'Год выпуска не должен быть больше текущего.'),
+        )
+    )
+    description = models.TextField(
+        verbose_name='Описание',
+        blank=True, null=True,
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        through='GenreTitle',
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        blank=True, null=True,
+        related_name='titles',
+        verbose_name='Категория'
+    )
+
+    class Meta:
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
+    def __str__(self) -> str:
+        return self.name[:CLS_NAME_LEN]
 
 
 class GenreTitle(models.Model):
-    genre = models.ForeignKey(Genre, on_delete=models.CASCADE,
-                              verbose_name='Жанр')
-    title = models.ForeignKey(Title, on_delete=models.CASCADE,
-                              verbose_name='Произведение')
-
-    def __str__(self):
-        return f'{self.title} {self.genre}'
+    """Модель для поля many-to-many."""
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение'
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        verbose_name='Жанр',
+    )
 
     class Meta:
+        verbose_name = 'Жанр произведений'
+        verbose_name_plural = 'Жанры произведений'
         constraints = (
             models.UniqueConstraint(
                 fields=('genre', 'title'),
                 name='unique_genre_title'),
         )
+
+    def __str__(self) -> str:
+        return f'Произведение {self.title} в жанре {self.genre}'
