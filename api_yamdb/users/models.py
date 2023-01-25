@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 
 from django.db import models
@@ -22,12 +24,17 @@ class User(AbstractUser):
 
     email = models.EmailField(
         verbose_name='Электронная почта',
-        unique=True,
+        max_length=254,
+        unique=True
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=25,
+        max_length=150,
         unique=True
+    )
+    first_name = models.CharField(
+        max_length=150,
+        blank=True
     )
     role = models.CharField(
         verbose_name='Роль',
@@ -35,9 +42,14 @@ class User(AbstractUser):
         choices=ROLES,
         default=USER
     )
+    confirmation_code = models.UUIDField(
+        default=uuid.uuid4,
+        editable=False
+    )
 
-    def __str__(self):
-        return self.username
+    @property
+    def is_user(self):
+        return self.role == self.USER
 
     @property
     def is_moderator(self):
@@ -47,6 +59,9 @@ class User(AbstractUser):
     def is_admin(self):
         return self.role == self.ADMIN
 
+    def __str__(self):
+        return self.username
+
     REQUIRED_FIELDS = ['email', ]
 
     class Meta:
@@ -55,7 +70,6 @@ class User(AbstractUser):
         constraints = (
             models.UniqueConstraint(
                 fields=('username', 'email'),
-                name='unique_login_fields',
-
+                name='unique_login_fields'
             ),
         )
