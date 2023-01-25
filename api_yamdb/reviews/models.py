@@ -51,7 +51,7 @@ class Review(models.Model):
 
     def __str__(self) -> str:
         return (f'Пользователь {self.author} '
-               f'оставил отзыв {self.text[:CLS_NAME_LEN]}')
+                f'оставил отзыв {self.text[:CLS_NAME_LEN]}')
 
 
 class Comment(models.Model):
