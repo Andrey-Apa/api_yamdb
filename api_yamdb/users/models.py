@@ -26,16 +26,18 @@ class User(AbstractUser):
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=150,
-        null=True,
+        max_length=25,
         unique=True
     )
     role = models.CharField(
         verbose_name='Роль',
-        max_length=50,
+        max_length=30,
         choices=ROLES,
         default=USER
     )
+
+    def __str__(self):
+        return self.username
 
     @property
     def is_moderator(self):
@@ -45,19 +47,15 @@ class User(AbstractUser):
     def is_admin(self):
         return self.role == self.ADMIN
 
-    @property
-    def is_user(self):
-        return self.role == self.USER
-
     REQUIRED_FIELDS = ['email', ]
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['username', 'email'],
+                fields=('username', 'email'),
                 name='unique_login_fields',
 
             ),
-        ]
+        )
