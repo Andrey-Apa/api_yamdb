@@ -50,7 +50,7 @@ class Genre(models.Model):
 class Title(models.Model):
     """Модель произведений."""
     name = models.CharField(
-        verbose_name='Название',
+        verbose_name='Название произведения',
         max_length=256,
     )
     year = models.IntegerField(
@@ -96,11 +96,13 @@ class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
+        related_name='genres',
         verbose_name='Произведение'
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
+        related_name='titles',
         verbose_name='Жанр',
     )
 
