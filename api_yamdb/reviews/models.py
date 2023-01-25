@@ -84,6 +84,12 @@ class Title(models.Model):
     def __str__(self) -> str:
         return self.name[:CLS_NAME_LEN]
 
+    def display_genre(self):
+        """Создает строковое представление жанров для админки."""
+        return ', '.join([genre.name for genre in self.genre.all()[:3]])
+
+    display_genre.short_description = 'Жанр'
+
 
 class GenreTitle(models.Model):
     """Модель для поля many-to-many."""
