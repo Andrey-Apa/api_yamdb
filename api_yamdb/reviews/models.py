@@ -4,7 +4,8 @@ from django.conf import settings
 
 from users.models import User
 
-CLS_NAME_LEN: int = settings.CLS_NAME_LEN ##задать константу в настройках CLS_NAME_LEN: int = 15
+CLS_NAME_LEN: int = settings.CLS_NAME_LEN
+
 
 class Review(models.Model):
     """Описание модели отзывов на произведения."""
@@ -41,17 +42,17 @@ class Review(models.Model):
         ordering = ('pub_date',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
                 fields=('title', 'author',),
                 name='unique_review'
             )
-        ]
+        )
 
     def __str__(self) -> str:
         return (f'Пользователь {self.author} '
                f'оставил отзыв {self.text[:CLS_NAME_LEN]}')
-        
+
 
 class Comment(models.Model):
     """Модель комментариев к отзыву."""
@@ -75,7 +76,7 @@ class Comment(models.Model):
         verbose_name='Дата публикации комментария',
         auto_now_add=True,
         db_index=True)
-    
+
     class Meta:
         ordering = ('-pub_date',)
         verbose_name = 'Комментарий'
