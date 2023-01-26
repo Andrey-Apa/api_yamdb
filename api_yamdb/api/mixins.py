@@ -5,4 +5,4 @@ class ListCreateDeleteViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                               mixins.DestroyModelMixin,
                               viewsets.GenericViewSet):
 
-    pass
+    lookup_field = 'slug'
