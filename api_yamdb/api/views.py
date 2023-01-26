@@ -1,5 +1,7 @@
 from rest_framework import filters, viewsets
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .mixins import ListCreateDeleteViewSet
 from .permissions import IsAdminOrReadOnly
 from .serializers import CategorySerializer, GenreSerializer, TitleSerializer
@@ -26,3 +28,5 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('category__slug', 'genre__slug', 'name', 'year')
