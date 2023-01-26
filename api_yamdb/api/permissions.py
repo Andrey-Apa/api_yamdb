@@ -4,7 +4,7 @@ from rest_framework import permissions
 class IsAdmin(permissions.BasePermission):
     """Права администратора."""
     
-    message = 'Недостаточно прав, вы не администртор!'
+    message = 'Недостаточно прав, вы не администратор!'
 
     def has_permission(self, request, view):
         return (request.user.is_authenticated
@@ -12,15 +12,6 @@ class IsAdmin(permissions.BasePermission):
                      or request.user.is_admin)
                 )
 
-
-class IsModerator(permissions.BasePermission):
-    """Права модератора."""
-    
-    message = 'Недостаточно прав, вы не модератор!'
-    
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_moderator
-    
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     """Права администратора или только чтение."""
@@ -51,6 +42,6 @@ class IsAuthorAdminModeratorOrReadOnly(permissions.BasePermission):
                     and (request.user.is_superuser
                          or request.user.is_admin
                          or request.user.is_moderator
-                         or request.user.role == obj.author)
+                         or request.user == obj.author)
                     )
                 )
