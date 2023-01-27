@@ -1,8 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.permissions import SAFE_METHODS
 
-from django_filters import rest_framework as filter
-
 from .filters import TitleFilter
 from .mixins import ListCreateDeleteViewSet
 from .permissions import IsAdminOrReadOnly
@@ -24,7 +22,6 @@ class GenreViewSet(ListCreateDeleteViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (filter.DjangoFilterBackend,)
     filterset_class = TitleFilter
 
     def get_queryset(self):
