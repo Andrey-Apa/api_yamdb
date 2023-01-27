@@ -10,6 +10,7 @@ from reviews.models import Category, Genre, Title
 
 
 class CategoryViewSet(ListCreateDeleteViewSet):
+    """Вьюсет для категорий."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -17,9 +18,11 @@ class CategoryViewSet(ListCreateDeleteViewSet):
 class GenreViewSet(ListCreateDeleteViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    """Вьюсет для жанров."""
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для произведений."""
     queryset = Title.objects.all()
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter

@@ -4,18 +4,21 @@ from reviews.models import Category, Genre, GenreTitle, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор категорий."""
     class Meta:
         fields = ('name', 'slug')
         model = Category
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор жанров."""
     class Meta:
         fields = ('name', 'slug')
         model = Genre
 
 
 class WriteTitleSerializer(serializers.ModelSerializer):
+    """Сериализатор произведений для запросов записи."""
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all()
     )
@@ -28,6 +31,7 @@ class WriteTitleSerializer(serializers.ModelSerializer):
         model = Title
 
     def create(self, validated_data):
+        """Добавление связи произведение-жанр (many-to-many)."""
         genres = validated_data.pop('genre')
         title = Title.objects.create(**validated_data)
 
@@ -38,6 +42,7 @@ class WriteTitleSerializer(serializers.ModelSerializer):
 
 
 class ReadTitleSerializer(serializers.ModelSerializer):
+    """Сериализатор произведений для запросов чтения."""
     category = CategorySerializer(read_only=True,)
     genre = GenreSerializer(read_only=True, many=True)
 
