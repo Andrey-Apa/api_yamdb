@@ -16,6 +16,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+##добавил для тестов simplejwt
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,7 +29,7 @@ INSTALLED_APPS = [
     'django_filters',
     'users',
     'reviews',
-    'api'
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -47,7 +48,7 @@ TEMPLATES_DIR = BASE_DIR / 'templates'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,12 +121,13 @@ POST_EMAIL = 'yamdb@yandex.ru'
 
 CLS_NAME_LEN: int = 15
 
+
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_FILTER_BACKENDS': (
         'rest_framework.filters.SearchFilter',
