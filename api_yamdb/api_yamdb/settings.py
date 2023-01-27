@@ -16,7 +16,6 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
-##добавил для тестов simplejwt
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

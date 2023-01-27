@@ -1,12 +1,11 @@
 from django.shortcuts import get_object_or_404
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    UniqueTogetherValidator)
-
-from reviews.models import (User, Category, Genre, 
+from reviews.models import (User, Category, Genre,
                             GenreTitle, Title, Review, Comment)
 
 
@@ -125,6 +124,7 @@ class ReadTitleSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'year', 'description', 'genre', 'category')
         model = Title
 
+
 class CommentSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Comment."""
     author = serializers.SlugRelatedField(
@@ -155,9 +155,10 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if (self.context['request'].method == 'POST' and
-            Review.objects.filter(author=user, title=title_id).exists()):
-                raise serializers.ValidationError(
-                    'Вы уже оставили свой отзыв на это произведение!'
-                )
+        if (self.context['request'].method == 'POST'
+                and Review.objects.filter(author=user,
+                                          title=title_id).exists()):
+            raise serializers.ValidationError(
+                'Вы уже оставили свой отзыв на это произведение!'
+            )
         return data

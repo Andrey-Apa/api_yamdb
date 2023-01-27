@@ -2,25 +2,19 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
 
-from rest_framework import (
-    filters,
-    generics,
-    response,
-    status,
-    viewsets
-)
+from rest_framework import (filters, generics, response,
+                            status, viewsets)
 from rest_framework.decorators import action
-
-from rest_framework.permissions import AllowAny, SAFE_METHODS
+from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 
 from .filters import TitleFilter
 from .mixins import ListCreateDeleteViewSet
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
 from .serializers import (
-  UserCreateSerializer, CustomTokenObtainSerializer, UserSerializer, 
-  CategorySerializer, GenreSerializer, ReadTitleSerializer,
-  WriteTitleSerializer, ReviewSerializer, CommentSerializer
+    UserCreateSerializer, CustomTokenObtainSerializer, UserSerializer,
+    CategorySerializer, GenreSerializer, ReadTitleSerializer,
+    WriteTitleSerializer, ReviewSerializer, CommentSerializer
 )
 from reviews.models import User, Category, Genre, Title, Review, Title
 
@@ -104,9 +98,7 @@ class UserViewSet(viewsets.ModelViewSet):
         url_path="me",
         url_name="me",
         serializer_class=UserSerializer,
-        permission_classes=(
-            rest_permissions.IsAuthenticated,
-        ),
+        permission_classes=(IsAuthenticated,),
     )
     def me(self, request):
         """Доступ пользователя к своей учетной записи по '/users/me/'."""

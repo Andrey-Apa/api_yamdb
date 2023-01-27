@@ -2,19 +2,19 @@ from django.urls import include, path
 
 from rest_framework.routers import DefaultRouter
 
-from .views import (UserViewSet, CategoryViewSet, GenreViewSet,
-                    CustomTokenObtain, TitleViewSet,
+from .views import (UserViewSet, UserCreateViewSet, CategoryViewSet,
+                    GenreViewSet, CustomTokenObtain, TitleViewSet,
                     ReviewViewSet, CommentViewSet)
 
 app_name = 'api'
 
 v1_router = DefaultRouter()
 
-v1_router.register(r'users', UserViewSet, basename='user')
+v1_router.register('users', UserViewSet, basename='user')
 v1_router.register('categories', CategoryViewSet, basename='category')
 v1_router.register('genres', GenreViewSet, basename='genre')
 v1_router.register('titles', TitleViewSet, basename='title')
-V1_router.register(
+v1_router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     ReviewViewSet,
     basename='reviews'
