@@ -1,16 +1,127 @@
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from django.core.mail import send_mail
 
-from rest_framework import viewsets
-from rest_framework.permissions import SAFE_METHODS
+from rest_framework import (
+    filters,
+    generics,
+    response,
+    status,
+    viewsets
+)
+from rest_framework.decorators import action
+
+from rest_framework.permissions import AllowAny, SAFE_METHODS
 
 from .filters import TitleFilter
 from .mixins import ListCreateDeleteViewSet
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
-from .serializers import (CategorySerializer, GenreSerializer,
-                          ReadTitleSerializer, WriteTitleSerializer,
-                          ReviewSerializer, CommentSerializer)
-from reviews.models import Category, Genre, Title, Review, Title
+from .serializers import (
+  UserCreateSerializer, CustomTokenObtainSerializer, UserSerializer, 
+  CategorySerializer, GenreSerializer, ReadTitleSerializer,
+  WriteTitleSerializer, ReviewSerializer, CommentSerializer
+)
+from reviews.models import User, Category, Genre, Title, Review, Title
+
+
+class UserCreateViewSet(generics.CreateAPIView):
+    """Класс для создания пользователя.
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = UserCreateSerializer
+    queryset = User.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        serializer = UserCreateSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        user = get_object_or_404(
+            User,
+            username=serializer.data['username']
+        )
+        mail_subject = 'Добро пожаловать на YaMDB :)'
+        send_mail(
+            mail_subject,
+            f'Приветствуем {user.username}!'
+            f'''ваш confirmation_code для получения API токена:
+            {user.confirmation_code}''',
+            settings.POST_EMAIL,
+            [f'{user.email}'],
+
+        )
+
+        return response.Response(
+            data={
+                'email': serializer.data['email'],
+                'username': serializer.data['username']
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class CustomTokenObtain(generics.CreateAPIView):
+    """Класс для создания JWT токена.
+    """
+    permission_classes = (AllowAny,)
+    serializer_class = CustomTokenObtainSerializer
+    queryset = User.objects.all()
+
+    def post(self, request, *args, **kwargs):
+        serializer = CustomTokenObtainSerializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        user = get_object_or_404(
+            User,
+            username=serializer.data['username']
+        )
+
+        token = serializer.get_token(user)
+
+        return response.Response(
+            {'token': f"{ token['access'] }"},
+            status=status.HTTP_200_OK
+        )
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет Пользователя.
+    Реализованы методы чтения, создания,
+    частичного обновления и удаления объектов.
+    Есть поиск по полю username.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAdmin,)
+    lookup_field = "username"
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ("username",)
+
+    @action(
+        detail=False,
+        methods=["get", "patch"],
+        url_path="me",
+        url_name="me",
+        serializer_class=UserSerializer,
+        permission_classes=(
+            rest_permissions.IsAuthenticated,
+        ),
+    )
+    def me(self, request):
+        """Доступ пользователя к своей учетной записи по '/users/me/'."""
+        me_user = request.user
+        serializer = self.get_serializer(me_user)
+        if request.method == "PATCH":
+            serializer = self.get_serializer(
+                me_user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(email=me_user.email, role=me_user.role)
+            return response.Response(
+                serializer.data, status=status.HTTP_200_OK
+            )
+        return response.Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(ListCreateDeleteViewSet):
