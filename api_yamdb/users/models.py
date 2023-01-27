@@ -36,6 +36,10 @@ class User(AbstractUser):
         max_length=150,
         blank=True
     )
+    last_name = models.CharField(
+        max_length=150,
+        blank=True
+    )
     role = models.CharField(
         verbose_name='Роль',
         max_length=30,
@@ -44,7 +48,8 @@ class User(AbstractUser):
     )
     confirmation_code = models.UUIDField(
         default=uuid.uuid4,
-        editable=False
+        editable=False,
+        unique=True
     )
 
     @property
