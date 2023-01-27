@@ -22,6 +22,7 @@ class Category(models.Model):
     )
 
     class Meta:
+        ordering = ('slug',)
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -41,6 +42,7 @@ class Genre(models.Model):
     )
 
     class Meta:
+        ordering = ('slug',)
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -73,12 +75,13 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        blank=True, null=True,
+        null=True,
         related_name='titles',
         verbose_name='Категория'
     )
 
     class Meta:
+        ordering = ('pk',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
@@ -118,6 +121,7 @@ class GenreTitle(models.Model):
 
     def __str__(self) -> str:
         return f'Произведение {self.title} в жанре {self.genre}'
+
 
 class Review(models.Model):
     """Описание модели отзывов на произведения."""
