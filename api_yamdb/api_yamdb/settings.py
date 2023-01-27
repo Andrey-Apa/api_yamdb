@@ -16,6 +16,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+##добавил для тестов simplejwt
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,7 +48,7 @@ TEMPLATES_DIR = BASE_DIR / 'templates'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -117,6 +118,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 CLS_NAME_LEN: int = 15
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
