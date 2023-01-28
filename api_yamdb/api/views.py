@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db.models import Avg
 
 from rest_framework import (filters, generics, response,
                             status, viewsets)
@@ -130,7 +131,8 @@ class GenreViewSet(ListCreateDeleteViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений."""
-    queryset = Title.objects.all()
+    queryset = (Title.objects.all().
+                annotate(rating=Avg('reviews__score')).order_by('pk'))
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
 
