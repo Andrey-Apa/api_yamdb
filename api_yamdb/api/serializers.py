@@ -1,5 +1,6 @@
-from django.shortcuts import get_object_or_404
+from django.db.models import Avg
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -119,10 +120,19 @@ class ReadTitleSerializer(serializers.ModelSerializer):
     """Сериализатор произведений для запросов чтения."""
     category = CategorySerializer(read_only=True,)
     genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = ('id', 'name', 'year', 'description',
+                  'rating', 'genre', 'category')
         model = Title
+
+    def get_rating(self, obj):
+        """Вычисляет средний рейтинг произведения."""
+        rating = obj.reviews.aggregate(score=Avg('score'))['score']
+        if rating:
+            rating = round(rating)
+        return rating
 
 
 class CommentSerializer(serializers.ModelSerializer):
