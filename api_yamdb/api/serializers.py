@@ -2,11 +2,12 @@ from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.validators import UniqueTogetherValidator
 
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    UniqueTogetherValidator)
+from django.core.validators import MaxValueValidator, MinValueValidator
 
-from reviews.models import (User, Category, Genre, 
+
+from reviews.models import (User, Category, Genre,
                             GenreTitle, Title, Review, Comment)
 
 
@@ -120,10 +121,15 @@ class ReadTitleSerializer(serializers.ModelSerializer):
     """Сериализатор произведений для запросов чтения."""
     category = CategorySerializer(read_only=True,)
     genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.FloatField(read_only=True)
 
     class Meta:
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
+        fields = (
+            'id', 'name', 'year', 'description',
+            'genre', 'category', 'rating',
+        )
         model = Title
+
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериалайзер для модели Comment."""
@@ -155,9 +161,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     def validate(self, data):
         user = self.context['request'].user
         title_id = self.context['view'].kwargs.get('title_id')
-        if (self.context['request'].method == 'POST' and
-            Review.objects.filter(author=user, title=title_id).exists()):
-                raise serializers.ValidationError(
-                    'Вы уже оставили свой отзыв на это произведение!'
-                )
+        if (self.context['request'].method == 'POST'
+                and Review.objects.filter(
+                    author=user,
+                    title=title_id).exists()):
+            raise serializers.ValidationError(
+                'Вы уже оставили свой отзыв на это произведение!'
+            )
         return data

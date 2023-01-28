@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
+from django.db.models import Avg
 
 from rest_framework import (
     filters,
@@ -11,16 +12,17 @@ from rest_framework import (
 )
 from rest_framework.decorators import action
 
-from rest_framework.permissions import AllowAny, SAFE_METHODS
+from rest_framework.permissions import AllowAny, SAFE_METHODS, IsAuthenticated
+
 
 from .filters import TitleFilter
 from .mixins import ListCreateDeleteViewSet
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsAuthorAdminModeratorOrReadOnly)
 from .serializers import (
-  UserCreateSerializer, CustomTokenObtainSerializer, UserSerializer, 
-  CategorySerializer, GenreSerializer, ReadTitleSerializer,
-  WriteTitleSerializer, ReviewSerializer, CommentSerializer
+    UserCreateSerializer, CustomTokenObtainSerializer, UserSerializer,
+    CategorySerializer, GenreSerializer, ReadTitleSerializer,
+    WriteTitleSerializer, ReviewSerializer, CommentSerializer
 )
 from reviews.models import User, Category, Genre, Title, Review, Title
 
@@ -105,7 +107,7 @@ class UserViewSet(viewsets.ModelViewSet):
         url_name="me",
         serializer_class=UserSerializer,
         permission_classes=(
-            rest_permissions.IsAuthenticated,
+            IsAuthenticated,
         ),
     )
     def me(self, request):
@@ -138,7 +140,7 @@ class GenreViewSet(ListCreateDeleteViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений."""
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
 
