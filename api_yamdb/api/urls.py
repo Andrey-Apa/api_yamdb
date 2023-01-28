@@ -6,7 +6,7 @@ from .views import (UserCreateViewSet, UserViewSet, CategoryViewSet,
                     GenreViewSet, CustomTokenObtain, TitleViewSet,
                     ReviewViewSet, CommentViewSet)
 
-# app_name = 'api'
+app_name = 'api'
 
 v1_router = DefaultRouter()
 
