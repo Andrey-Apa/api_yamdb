@@ -7,7 +7,7 @@ class CustomUserCreationForm(UserCreationForm):
     """Форма регистрации унаследованная от дефолтной."""
     class Meta:
         model = User
-        fields = ('username', 'email', 'confirmation_code')
+        fields = ('username', 'email')
 
 
 class CustomUserChangeForm(UserChangeForm):

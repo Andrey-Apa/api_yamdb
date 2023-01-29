@@ -1,10 +1,13 @@
+from http import HTTPStatus
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
+from django.core.exceptions import ValidationError
 from django.db.models import Avg
+from django.db import IntegrityError
 
-from rest_framework import (filters, generics, response,
-                            status, viewsets)
+from rest_framework import (filters, generics, response, viewsets)
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated, SAFE_METHODS
 
@@ -20,10 +23,6 @@ from .serializers import (
 from reviews.models import User, Category, Genre, Title, Review, Title
 
 
-GET_TOKEN_INVALID_REQUEST = (
-    'Пользователь не найден, проверьте вводимые'
-)
-CONFIRMATION_CODE_LENGTH = 16
 ALLOWED_METHODS = ('get', 'post', 'patch', 'delete')
 
 
@@ -36,26 +35,25 @@ class UserCreateViewSet(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = UserCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            send_mail(
-                'Добро пожаловать на YaMDB',
-                f'Дорогой {user.username},'
-                f'Ваш confirmation_code: {user.confirmation_code}',
-                settings.POST_EMAIL,
-                [f'{user.email}'],
-                fail_silently=False,
+        email = request.data.get('email')
+        username = request.data.get('username')
+        if User.objects.filter(email=email, username=username).exists():
+            return response.Response(status=HTTPStatus.OK)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user, create = User.objects.get_or_create(
+                **serializer.validated_data
             )
-            return response.Response(
-                data={
-                    'email': serializer.data['email'],
-                    'username': serializer.data['username']
-                },
-                status=status.HTTP_200_OK
-            )
-        return response.Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError:
+            raise ValidationError('Неверное имя пользователя или email')
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            subject='YaMDb регистрация',
+            message=f'confirmation_code: {confirmation_code}',
+            from_email=settings.POST_EMAIL,
+            recipient_list=[user.email],
+        )
+        return response.Response(serializer.data, status=HTTPStatus.OK)
 
 
 class CustomTokenObtain(generics.CreateAPIView):
@@ -75,7 +73,7 @@ class CustomTokenObtain(generics.CreateAPIView):
         token = serializer.get_token(user)
         return response.Response(
             {'token': f"{ token['access'] }"},
-            status=status.HTTP_200_OK
+            status=HTTPStatus.OK
         )
 
 
@@ -112,9 +110,9 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save(email=me_user.email, role=me_user.role)
             return response.Response(
-                serializer.data, status=status.HTTP_200_OK
+                serializer.data, status=HTTPStatus.OK
             )
-        return response.Response(serializer.data, status=status.HTTP_200_OK)
+        return response.Response(serializer.data, status=HTTPStatus.OK)
 
 
 class CategoryViewSet(ListCreateDeleteViewSet):
