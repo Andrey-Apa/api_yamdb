@@ -21,10 +21,8 @@ from reviews.models import User, Category, Genre, Title, Review, Title
 
 
 GET_TOKEN_INVALID_REQUEST = (
-    'Пользователь с такими данными не был найден, проверьте введенные данные!'
+    'Пользователь не найден, проверьте вводимые'
 )
-EMAIL_SUBJECT = 'YamDB - Код подтверждения'
-EMAIL_TEXT = ('ваш секретный код для получения токена: {confirmation_code}')
 CONFIRMATION_CODE_LENGTH = 16
 ALLOWED_METHODS = ('get', 'post', 'patch', 'delete')
 
@@ -38,16 +36,11 @@ class UserCreateViewSet(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = UserCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         if serializer.is_valid():
-            user = get_object_or_404(
-                User,
-                username=serializer.data['username']
-            )
+            user = serializer.save()
             send_mail(
                 'Добро пожаловать на YaMDB',
-                f'Дорогой {user.username},\n'
+                f'Дорогой {user.username},'
                 f'Ваш confirmation_code: {user.confirmation_code}',
                 settings.POST_EMAIL,
                 [f'{user.email}'],
@@ -60,6 +53,9 @@ class UserCreateViewSet(generics.CreateAPIView):
                 },
                 status=status.HTTP_200_OK
             )
+        return response.Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST)
 
 
 class CustomTokenObtain(generics.CreateAPIView):

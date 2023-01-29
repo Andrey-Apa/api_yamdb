@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import (User, Category, Genre,
@@ -16,12 +15,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=('username', 'email')
-            )
-        ]
 
     def validate(self, attrs):
         """Проверка уникальности полей и ввода недопустимого имени 'me'."""
