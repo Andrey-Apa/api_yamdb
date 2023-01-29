@@ -20,8 +20,17 @@ from .serializers import (
 from reviews.models import User, Category, Genre, Title, Review, Title
 
 
+GET_TOKEN_INVALID_REQUEST = (
+    'Пользователь с такими данными не был найден, проверьте введенные данные!'
+)
+EMAIL_SUBJECT = 'YamDB - Код подтверждения'
+EMAIL_TEXT = ('ваш секретный код для получения токена: {confirmation_code}')
+CONFIRMATION_CODE_LENGTH = 16
+ALLOWED_METHODS = ('get', 'post', 'patch', 'delete')
+
+
 class UserCreateViewSet(generics.CreateAPIView):
-    """Класс для создания пользователя.
+    """Представление для создания пользователя. Имеет только POST запрос.
     """
     permission_classes = (AllowAny,)
     serializer_class = UserCreateSerializer
@@ -29,35 +38,32 @@ class UserCreateViewSet(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = UserCreateSerializer(data=request.data)
-
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        user = get_object_or_404(
-            User,
-            username=serializer.data['username']
-        )
-        mail_subject = 'Добро пожаловать на YaMDB :)'
-        send_mail(
-            mail_subject,
-            f'Приветствуем {user.username}!'
-            f'''ваш confirmation_code для получения API токена:
-            {user.confirmation_code}''',
-            settings.POST_EMAIL,
-            [f'{user.email}'],
-
-        )
-
-        return response.Response(
-            data={
-                'email': serializer.data['email'],
-                'username': serializer.data['username']
-            },
-            status=status.HTTP_200_OK
-        )
+        if serializer.is_valid():
+            user = get_object_or_404(
+                User,
+                username=serializer.data['username']
+            )
+            send_mail(
+                'Добро пожаловать на YaMDB',
+                f'Дорогой {user.username},\n'
+                f'Ваш confirmation_code: {user.confirmation_code}',
+                settings.POST_EMAIL,
+                [f'{user.email}'],
+                fail_silently=False,
+            )
+            return response.Response(
+                data={
+                    'email': serializer.data['email'],
+                    'username': serializer.data['username']
+                },
+                status=status.HTTP_200_OK
+            )
 
 
 class CustomTokenObtain(generics.CreateAPIView):
-    """Класс для создания JWT токена.
+    """Представление для создания JWT токена. Имеет только POST запрос.
     """
     permission_classes = (AllowAny,)
     serializer_class = CustomTokenObtainSerializer
@@ -65,15 +71,12 @@ class CustomTokenObtain(generics.CreateAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = CustomTokenObtainSerializer(data=request.data)
-
         serializer.is_valid(raise_exception=True)
         user = get_object_or_404(
             User,
             username=serializer.data['username']
         )
-
         token = serializer.get_token(user)
-
         return response.Response(
             {'token': f"{ token['access'] }"},
             status=status.HTTP_200_OK
@@ -92,6 +95,7 @@ class UserViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     filter_backends = (filters.SearchFilter,)
     search_fields = ("username",)
+    http_method_names = ALLOWED_METHODS
 
     @action(
         detail=False,

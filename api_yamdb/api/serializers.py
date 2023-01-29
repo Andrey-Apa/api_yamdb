@@ -42,7 +42,7 @@ class CustomTokenObtainSerializer(serializers.ModelSerializer):
     """
     username_field = User.USERNAME_FIELD
     username = serializers.CharField()
-    confirmation_code = serializers.UUIDField()
+    confirmation_code = serializers.CharField()
 
     class Meta:
         model = User
@@ -166,3 +166,11 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Вы уже оставили свой отзыв на это произведение!'
             )
         return data
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
+        )

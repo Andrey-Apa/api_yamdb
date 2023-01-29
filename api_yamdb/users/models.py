@@ -49,10 +49,12 @@ class User(AbstractUser):
         choices=ROLES,
         default=USER
     )
-    confirmation_code = models.UUIDField(
+    confirmation_code = models.CharField(
         default=uuid.uuid4,
-        editable=False,
-        unique=True
+        editable=True,
+        unique=True,
+        max_length=36,
+        auto_created=True
     )
 
     @property
