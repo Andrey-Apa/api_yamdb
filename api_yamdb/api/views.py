@@ -1,11 +1,8 @@
 from http import HTTPStatus
-from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.core.mail import send_mail
-from django.core.exceptions import ValidationError
 from django.db.models import Avg
-from django.db import IntegrityError
 
 from rest_framework import (filters, generics, response, viewsets)
 from rest_framework.decorators import action
@@ -34,26 +31,24 @@ class UserCreateViewSet(generics.CreateAPIView):
     queryset = User.objects.all()
 
     def post(self, request, *args, **kwargs):
-        serializer = UserCreateSerializer(data=request.data)
+
         email = request.data.get('email')
         username = request.data.get('username')
+
         if User.objects.filter(email=email, username=username).exists():
-            return response.Response(status=HTTPStatus.OK)
-        serializer.is_valid(raise_exception=True)
-        try:
-            user, create = User.objects.get_or_create(
-                **serializer.validated_data
-            )
-        except IntegrityError:
-            raise ValidationError('Неверное имя пользователя или email')
-        confirmation_code = default_token_generator.make_token(user)
+            user = User.objects.get(email=email, username=username)
+        else:
+            serializer = UserCreateSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            user = User.objects.create(**serializer.validated_data)
+
         send_mail(
             subject='YaMDb регистрация',
-            message=f'confirmation_code: {confirmation_code}',
+            message=f'confirmation_code: {user.confirmation_code}',
             from_email=settings.POST_EMAIL,
             recipient_list=[user.email],
         )
-        return response.Response(serializer.data, status=HTTPStatus.OK)
+        return response.Response(data=request.data, status=HTTPStatus.OK)
 
 
 class CustomTokenObtain(generics.CreateAPIView):
@@ -86,16 +81,16 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
-    lookup_field = "username"
+    lookup_field = 'username'
     filter_backends = (filters.SearchFilter,)
-    search_fields = ("username",)
+    search_fields = ('username',)
     http_method_names = ALLOWED_METHODS
 
     @action(
         detail=False,
-        methods=["get", "patch"],
-        url_path="me",
-        url_name="me",
+        methods=['get', 'patch'],
+        url_path='me',
+        url_name='me',
         serializer_class=UserSerializer,
         permission_classes=(IsAuthenticated,),
     )

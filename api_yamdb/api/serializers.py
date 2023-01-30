@@ -20,7 +20,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         """Проверка уникальности полей и ввода недопустимого имени 'me'."""
         if attrs['username'] == 'me':
             raise serializers.ValidationError(
-                "Поле username не может быть 'me'."
+                'Поле username не может быть "me".'
             )
         if attrs['username'] == attrs['email']:
             raise serializers.ValidationError(
@@ -50,7 +50,7 @@ class CustomTokenObtainSerializer(serializers.ModelSerializer):
         username = attrs['username']
         confirmation_code = attrs['confirmation_code']
         user = get_object_or_404(User, username=username)
-        if confirmation_code != user.confirmation_code:
+        if confirmation_code != str(user.confirmation_code):
             raise serializers.ValidationError('Ошибка ввода данных')
         return attrs
 
@@ -61,12 +61,12 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-            "username",
-            "email",
-            "role",
-            "first_name",
-            "last_name",
-            "bio",
+            'username',
+            'email',
+            'role',
+            'first_name',
+            'last_name',
+            'bio',
         )
 
 
@@ -159,11 +159,3 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Вы уже оставили свой отзыв на это произведение!'
             )
         return data
-
-
-class AdminUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = (
-            'username', 'email', 'first_name', 'last_name', 'bio', 'role',
-        )
