@@ -51,8 +51,7 @@ class User(AbstractUser):
     )
     confirmation_code = models.UUIDField(
         default=uuid.uuid4,
-        editable=False,
-        unique=True
+        editable=False
     )
 
     @property
