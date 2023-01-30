@@ -25,7 +25,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for path, model in DATA_TUPLE:
-            with open(f'static/data/{path}') as csv_file:
+            with open(f'static/data/{path}', encoding='utf-8') as csv_file:
                 reader = csv.DictReader(csv_file)
 
                 for row in reader:
