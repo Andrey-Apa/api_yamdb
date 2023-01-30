@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractUser
 
 from django.db import models
 
+from .validators import validate_username
+
 
 class User(AbstractUser):
     ADMIN = 'admin'
@@ -30,7 +32,8 @@ class User(AbstractUser):
     username = models.CharField(
         verbose_name='Имя пользователя',
         max_length=150,
-        unique=True
+        unique=True,
+        validators=[validate_username],
     )
     first_name = models.CharField(
         max_length=150,
