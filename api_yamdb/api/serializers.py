@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from reviews.models import (User, Category, Genre,
                             GenreTitle, Title, Review, Comment)
@@ -18,11 +18,11 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Проверка уникальности полей и ввода недопустимого имени 'me'."""
-        if attrs['username'] == 'me':
+        if attrs.get('username') == 'me':
             raise serializers.ValidationError(
                 'Поле username не может быть "me".'
             )
-        if attrs['username'] == attrs['email']:
+        if attrs.get('username') == attrs.get('email'):
             raise serializers.ValidationError(
                 'Поля email и username не должны совпадать.'
             )
@@ -43,12 +43,12 @@ class CustomTokenObtainSerializer(serializers.ModelSerializer):
 
     def get_token(self, user):
         """Функция создания токена."""
-        refresh = RefreshToken.for_user(user)
-        return {'access': str(refresh.access_token), }
+        access = AccessToken.for_user(user)
+        return {'access': str(access), }
 
     def validate(self, attrs):
-        username = attrs['username']
-        confirmation_code = attrs['confirmation_code']
+        username = attrs.get('username')
+        confirmation_code = attrs.get('confirmation_code')
         user = get_object_or_404(User, username=username)
         if confirmation_code != str(user.confirmation_code):
             raise serializers.ValidationError('Ошибка ввода данных')

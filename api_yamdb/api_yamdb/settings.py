@@ -116,6 +116,9 @@ POST_EMAIL = 'yamdb@yandex.ru'
 
 CLS_NAME_LEN: int = 15
 
+FIRST_BOOK_YEAR: int = 868
+
+GENRES_NUM_SHOW: int = 3
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
