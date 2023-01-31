@@ -20,7 +20,6 @@ class User(AbstractUser):
 
     bio = models.TextField(
         verbose_name='О себе',
-        null=True,
         blank=True
     )
 
@@ -33,7 +32,7 @@ class User(AbstractUser):
         verbose_name='Имя пользователя',
         max_length=150,
         unique=True,
-        validators=[validate_username],
+        validators=(validate_username,)
     )
     first_name = models.CharField(
         max_length=150,
@@ -69,7 +68,7 @@ class User(AbstractUser):
     def __str__(self):
         return self.username
 
-    REQUIRED_FIELDS = ['email', ]
+    REQUIRED_FIELDS = ('email',)
 
     class Meta:
         verbose_name = 'Пользователь'
