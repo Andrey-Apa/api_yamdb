@@ -1,23 +1,25 @@
-from datetime import datetime
-
+from django.utils import timezone
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
-from users.models import User
+User = get_user_model()
 
 CLS_NAME_LEN: int = settings.CLS_NAME_LEN
-CURRENT_YEAR: int = int(datetime.now().strftime('%Y'))
+FIRST_BOOK_YEAR: int = settings.FIRST_BOOK_YEAR
+CURRENT_YEAR: int = int(timezone.now().year)
+GENRES_NUM_SHOW: int = settings.GENRES_NUM_SHOW
 
 
 class Category(models.Model):
     """Модель категорий."""
     name = models.CharField(
-        verbose_name='Название категории',
+        'Название категории',
         max_length=256,
     )
     slug = models.SlugField(
-        verbose_name='slug-адрес категории',
+        'slug-адрес категории',
         unique=True,
     )
 
@@ -33,11 +35,11 @@ class Category(models.Model):
 class Genre(models.Model):
     """Модель жанров."""
     name = models.CharField(
-        verbose_name='Название жанра',
+        'Название жанра',
         max_length=256,
     )
     slug = models.SlugField(
-        verbose_name='slug-адрес жанра',
+        'slug-адрес жанра',
         unique=True,
     )
 
@@ -53,19 +55,22 @@ class Genre(models.Model):
 class Title(models.Model):
     """Модель произведений."""
     name = models.CharField(
-        verbose_name='Название произведения',
+        'Название произведения',
         max_length=256,
     )
-    year = models.IntegerField(
-        verbose_name='Год выпуска',
+    year = models.PositiveSmallIntegerField(
+        'Год выпуска',
         validators=(
+            MinValueValidator(
+                FIRST_BOOK_YEAR,
+                'Год выпуска не должен быть меньше 868.'),
             MaxValueValidator(
                 CURRENT_YEAR,
                 'Год выпуска не должен быть больше текущего.'),
         )
     )
     description = models.TextField(
-        verbose_name='Описание',
+        'Описание',
         blank=True, null=True,
     )
     genre = models.ManyToManyField(
@@ -90,7 +95,8 @@ class Title(models.Model):
 
     def display_genre(self):
         """Создает строковое представление жанров для админки."""
-        return ', '.join([genre.name for genre in self.genre.all()[:3]])
+        return ', '.join(
+            [genre.name for genre in self.genre.all()[:GENRES_NUM_SHOW]])
 
     display_genre.short_description = 'Жанр'
 
@@ -135,8 +141,8 @@ class Review(models.Model):
         verbose_name='Текст отзыва',
         help_text='Оставьте свой отзыв о произведении'
     )
-    score = models.IntegerField(
-        verbose_name='Оценка',
+    score = models.PositiveSmallIntegerField(
+        'Оценка',
         validators=(
             MinValueValidator(1, 'Оценка не может быть меньше 1!'),
             MaxValueValidator(10, 'Оценка не может быть больше 10!'),
@@ -150,7 +156,7 @@ class Review(models.Model):
         related_name='reviews'
     )
     pub_date = models.DateTimeField(
-        verbose_name='Дата публикации отзыва',
+        'Дата публикации отзыва',
         auto_now_add=True,
         db_index=True)
 
@@ -179,7 +185,7 @@ class Comment(models.Model):
         related_name='comments'
     )
     text = models.TextField(
-        verbose_name='Текст комментария',
+        'Текст комментария',
         help_text='Оставьте свой комментарий к отзыву'
     )
     author = models.ForeignKey(
@@ -189,7 +195,7 @@ class Comment(models.Model):
         related_name='comments'
     )
     pub_date = models.DateTimeField(
-        verbose_name='Дата публикации комментария',
+        'Дата публикации комментария',
         auto_now_add=True,
         db_index=True)
 

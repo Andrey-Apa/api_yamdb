@@ -36,7 +36,7 @@ class GenreTitleAdmin(admin.ModelAdmin):
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('pk', 'title', 'text', 'score', 'author', 'pub_date')
-    search_fields = ('author', 'text',)
+    search_fields = ('author__username', 'text',)
     list_filter = ('title', 'score',)
     empty_value_display = '-пусто-'
 
