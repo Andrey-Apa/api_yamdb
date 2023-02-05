@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Category, Title, Genre, GenreTitle, Review, Comment
+from .models import (Category, Title, Genre, GenreTitle,
+                     Review, Comment, ForbiddenWord)
 
 
 @admin.register(Category)
@@ -47,3 +48,8 @@ class CommentAdmin(admin.ModelAdmin):
     search_fields = ('text',)
     list_filter = ('pub_date', 'author',)
     empty_value_display = '-пусто-'
+
+
+@admin.register(ForbiddenWord)
+class ForbiddenWordAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name')

@@ -1,6 +1,9 @@
+import re
+
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.conf import settings
 
@@ -175,6 +178,16 @@ class Review(models.Model):
         return (f'Пользователь {self.author} '
                 f'оставил отзыв {self.text[:CLS_NAME_LEN]}')
 
+    def clean(self):
+        """Проверка текстового поля на наличие запрещенных слов."""
+        pattern = ForbiddenWord.get_stop_list()
+        errors = re.findall(pattern, self.text)
+        if errors:
+            errors = set(errors)
+            raise ValidationError({
+                'text': f'Запрещенные слова: {", ".join(errors)}'
+            })
+
 
 class Comment(models.Model):
     """Модель комментариев к отзыву."""
@@ -206,3 +219,32 @@ class Comment(models.Model):
 
     def __str__(self) -> str:
         return self.text[:CLS_NAME_LEN]
+
+    def clean(self):
+        """Проверка текстового поля на наличие запрещенных слов."""
+        pattern = ForbiddenWord.get_stop_list()
+        errors = re.findall(pattern, self.text)
+        if errors:
+            errors = set(errors)
+            raise ValidationError({
+                'text': f'Запрещенные слова: {", ".join(errors)}'
+            })
+
+
+class ForbiddenWord(models.Model):
+    """Модель запрещенных слов."""
+    name = models.CharField('Запретное слово', max_length=32)
+
+    class Meta():
+        ordering = ('pk',)
+        verbose_name = 'Стоп-слово'
+        verbose_name_plural = 'Стоп-слова'
+
+    @classmethod
+    def get_stop_list(cls):
+        """Возвращает строку состоящую из всех стоп-слов, в формате:
+        '(first_word|second_word|...|last_word)'.
+        """
+        stop_list = cls.objects.all()
+        stop_string = '(' + '|'.join([word.name for word in stop_list]) + ')'
+        return stop_string

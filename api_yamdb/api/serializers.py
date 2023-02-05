@@ -132,6 +132,11 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date',)
         model = Comment
 
+    def validate(self, attrs):
+        instance = Comment(**attrs)
+        instance.clean()
+        return attrs
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Review."""
@@ -158,4 +163,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Вы уже оставили свой отзыв на это произведение!'
             )
+        instance = Review(**data)
+        instance.clean()
         return data
